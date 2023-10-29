@@ -1,9 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { AuthDto } from './auth.dto';
-import { hash } from 'argon2';
+import { LoginDto } from './dto/login.dto';
+import { hash, verify } from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { UserDto } from '../user/dto/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -12,7 +19,7 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
 
-  async register(dto: AuthDto) {
+  async register(dto: UserDto) {
     const oldUser = await this.prisma.user.findUnique({
       where: {
         email: dto.email,
@@ -26,7 +33,45 @@ export class AuthService {
         email: dto.email,
         firstName: dto.firstName,
         lastName: dto.lastName,
+        age: dto.age,
+        phone: dto.phone,
+        description: dto.description,
         password: await hash(dto.password),
+        tags: {
+          create: dto.tags,
+        },
+        socialNetworks: {
+          create: dto.socialNetworks,
+        },
+      },
+    });
+
+    const tokens = await this.issueTokens(user.id);
+
+    return {
+      user: this.returnUserFields(user),
+      ...tokens,
+    };
+  }
+
+  async login(dto: LoginDto) {
+    const user = await this.validateUser(dto);
+    const tokens = await this.issueTokens(user.id);
+
+    return {
+      user,
+      ...tokens,
+    };
+  }
+
+  async getNewTokens(dto: RefreshTokenDto) {
+    const result = await this.jwt.verifyAsync(dto.refreshToken);
+
+    if (!result) throw new BadRequestException('Invalid token');
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: result.id,
       },
     });
 
@@ -57,5 +102,20 @@ export class AuthService {
       id: user.id,
       email: user.email,
     };
+  }
+
+  private async validateUser(dto: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email,
+      },
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    const isValid = await verify(user.password, dto.password);
+    if (!isValid) throw new UnauthorizedException('Invalid password');
+
+    return user;
   }
 }

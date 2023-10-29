@@ -11,25 +11,41 @@ datasource db {
 }
 
 model User {
-  id          Int       @id @default(autoincrement())
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  firstName   String    @map("first_name")
-  lastName    String    @map("last_name")
-  email       String    @unique
-  password    String
-  phone       String?   @default("")
-  age         Int?
-  description String?
-  comments    Comment[]
-  // gender      Int
+  id             Int             @id @default(autoincrement())
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  firstName      String          @map("first_name")
+  lastName       String          @map("last_name")
+  email          String          @unique
+  password       String
+  phone          String?         @default("")
+  age            Int?
+  description    String?
+  gender         EnumGender?
+  tags           Tag[]
+  socialNetworks SocialNetwork[]
+  // comments    Comment[]
   // favorites   Int[]
-  // tags        Int[]
   // country     city
 }
 
-model Comment {
-  id     Int   @id @default(autoincrement())
-  User   User? @relation(fields: [userId], references: [id])
-  userId Int?
+model SocialNetwork {
+  id     Int    @id @default(autoincrement())
+  name   String
+  userId Int
+  user   User   @relation(fields: [userId], references: [id])
+  link   String
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  name      String   @unique
+  users     User[]
+}
+
+enum EnumGender {
+  MALE
+  FEMALE
 }
