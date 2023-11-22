@@ -1,26 +1,29 @@
+import { IsDate, IsOptional, IsString, MinLength } from 'class-validator';
+import { EnumGender } from '@prisma/client';
 import { TagDto } from '../../tag/dto/tag.dto';
 import { SocialNetworkDto } from './social-network.dto';
-import { EnumGender } from '@prisma/client';
-import { IsEmail, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class UserDto {
   id: number;
-  @IsEmail()
-  email: string;
   @IsString()
-  firstName: string;
+  username: string;
   @IsString()
-  lastName: string;
+  name: string;
   @IsString()
-  phone: string;
-  @IsInt()
-  age: number;
-  @IsString()
-  description: string;
+  @MinLength(6, {
+    message: 'Длина пароля должна составлять не менее 6 символов',
+  })
+  password: string;
+  @IsDate()
+  @IsOptional()
+  birthDate: Date;
   @IsString()
   @IsOptional()
-  password: string;
+  description: string;
+  @IsOptional()
   gender: EnumGender;
+  @IsOptional()
   tags: TagDto[];
+  @IsOptional()
   socialNetworks: SocialNetworkDto[];
 }

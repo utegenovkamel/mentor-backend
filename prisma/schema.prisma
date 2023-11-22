@@ -14,19 +14,14 @@ model User {
   id             Int             @id @default(autoincrement())
   createdAt      DateTime        @default(now()) @map("created_at")
   updatedAt      DateTime        @updatedAt @map("updated_at")
-  firstName      String          @map("first_name")
-  lastName       String          @map("last_name")
-  email          String          @unique
+  username       String          @unique
+  name           String
   password       String
-  phone          String?         @default("")
-  age            Int?
+  birthDate      DateTime?
   description    String?
   gender         EnumGender?
   tags           Tag[]
   socialNetworks SocialNetwork[]
-  // comments    Comment[]
-  // favorites   Int[]
-  // country     city
 }
 
 model SocialNetwork {
@@ -43,6 +38,16 @@ model Tag {
   updatedAt DateTime @updatedAt @map("updated_at")
   name      String   @unique
   users     User[]
+}
+
+model Country {
+  id   Int    @id
+  name String @unique
+}
+
+model City {
+  id   Int    @id
+  name String @unique
 }
 
 enum EnumGender {

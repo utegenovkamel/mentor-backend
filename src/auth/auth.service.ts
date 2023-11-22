@@ -5,12 +5,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { LoginDto } from './dto/login.dto';
+import { LoginUserDto } from './dto/loginUser.dto';
 import { hash, verify } from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { UserDto } from '../user/dto/user.dto';
+import { RegisterUserDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -19,10 +19,10 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
 
-  async register(dto: UserDto) {
+  async register(dto: RegisterUserDto) {
     const oldUser = await this.prisma.user.findUnique({
       where: {
-        email: dto.email,
+        username: dto.username,
       },
     });
 
@@ -30,11 +30,10 @@ export class AuthService {
 
     const user = await this.prisma.user.create({
       data: {
-        email: dto.email,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        age: dto.age,
-        phone: dto.phone,
+        username: dto.username,
+        name: dto.name,
+        birthDate: dto.birthDate,
+        gender: dto.gender,
         description: dto.description,
         password: await hash(dto.password),
         tags: {
@@ -54,7 +53,7 @@ export class AuthService {
     };
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginUserDto) {
     const user = await this.validateUser(dto);
     const tokens = await this.issueTokens(user.id);
 
@@ -100,14 +99,14 @@ export class AuthService {
   private returnUserFields(user: User) {
     return {
       id: user.id,
-      email: user.email,
+      username: user.username,
     };
   }
 
-  private async validateUser(dto: LoginDto) {
+  private async validateUser(dto: LoginUserDto) {
     const user = await this.prisma.user.findUnique({
       where: {
-        email: dto.email,
+        username: dto.username,
       },
     });
 

@@ -1,13 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UserDto } from './dto/user.dto';
 import { PrismaService } from '../prisma.service';
+import { UpdateUserDto } from './dto/updateUser.dto';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async getById(id: number) {
-    console.log('id', id);
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -26,7 +25,7 @@ export class UserService {
     });
   }
 
-  async update(user: UserDto) {
+  async update(user: UpdateUserDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: { id: user.id },
     });
@@ -36,14 +35,12 @@ export class UserService {
     }
 
     const updatedData = {
-      email: user.email,
+      username: user.username,
+      name: user.name,
+      birthDate: user.birthDate,
       password: user.password,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phone: user.phone,
-      age: user.age,
       description: user.description,
-      gender: { set: user.gender },
+      gender: user.gender,
       tags: {
         update: user.tags.map((tag) => ({
           where: { id: tag.id },
