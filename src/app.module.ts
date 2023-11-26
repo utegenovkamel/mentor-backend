@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { TagModule } from './tag/tag.module';
 import { CountryModule } from './country/country.module';
+import { DictionaryModule } from './dictionary/dictionary.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { CountryModule } from './country/country.module';
     UserModule,
     TagModule,
     CountryModule,
+    DictionaryModule,
   ],
   controllers: [],
   providers: [],
